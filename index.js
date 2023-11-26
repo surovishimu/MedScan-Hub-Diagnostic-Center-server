@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middleware
 app.use(cors());
@@ -27,7 +27,9 @@ async function run() {
     try {
         await client.connect();
         const userCollection = client.db("medscanDb").collection("users");
+        const bannerCollection = client.db("medscanDb").collection("banners");
 
+        // API for users
         app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result)
@@ -40,6 +42,47 @@ async function run() {
                 return res.send({ message: 'user already exists', insertedId: null })
             }
             const result = await userCollection.insertOne(users);
+            res.send(result);
+        })
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/users/blockstatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'block'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/users/activestatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'Active'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // API for banners
+
+        app.post('/banners', async (req, res) => {
+            const banners = req.body;
+            const result = await bannerCollection.insertOne(banners);
             res.send(result);
         })
 
