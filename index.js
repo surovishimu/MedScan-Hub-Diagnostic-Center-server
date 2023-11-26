@@ -28,6 +28,7 @@ async function run() {
         await client.connect();
         const userCollection = client.db("medscanDb").collection("users");
         const bannerCollection = client.db("medscanDb").collection("banners");
+        const popularPackages = client.db("medscanDb").collection("popularPackage");
 
         // API for users
         app.get('/users', async (req, res) => {
@@ -78,6 +79,8 @@ async function run() {
             res.send(result);
         })
 
+        // -----------------------**********------------------------------------
+
         // API for banners
 
         app.get('/banners', async (req, res) => {
@@ -125,6 +128,25 @@ async function run() {
                 res.status(500).send('Internal Server Error');
             }
         });
+
+        // -----------------------**********------------------------------------
+
+        // API for popular package
+
+        app.get('/popularPackages', async (req, res) => {
+            const result = await popularPackages.find().toArray();
+            res.send(result)
+        })
+
+        app.get('/popularPackages/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await popularPackages.findOne(query);
+            res.send(result);
+        })
+
+
+
 
 
 
