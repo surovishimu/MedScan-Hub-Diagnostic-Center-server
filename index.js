@@ -80,11 +80,52 @@ async function run() {
 
         // API for banners
 
+        app.get('/banners', async (req, res) => {
+            const result = await bannerCollection.find().toArray();
+            res.send(result)
+        })
+
         app.post('/banners', async (req, res) => {
             const banners = req.body;
             const result = await bannerCollection.insertOne(banners);
             res.send(result);
         })
+        app.delete('/banners/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bannerCollection.deleteOne(query);
+            res.send(result);
+        })
+        app.patch('/banners/activestatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const filterDeactivateAll = { isActive: true };
+            const updateDeactivateAll = {
+                $set: {
+                    isActive: false
+                }
+            };
+            await bannerCollection.updateMany(filterDeactivateAll, updateDeactivateAll);
+            const filterActivateSelected = { _id: new ObjectId(id) };
+            const updateActivateSelected = {
+                $set: {
+                    isActive: true
+                }
+            };
+
+            const result = await bannerCollection.updateOne(filterActivateSelected, updateActivateSelected);
+            res.send(result);
+        });
+        // get active banner
+        app.get('/banners/active', async (req, res) => {
+            try {
+                const activeBanner = await bannerCollection.findOne({ isActive: true });
+                res.send(activeBanner);
+            } catch (error) {
+                console.error('Error retrieving active banner:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
 
 
 
