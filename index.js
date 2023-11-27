@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -35,6 +36,37 @@ async function run() {
             ("allDistrict");
         const upazilaCollection = client.db("medscanDb").collection
             ("allUpazila");
+        const reservationCollection = client.db("medscanDb").collection
+            ("allReservation");
+
+
+        // API for reservation
+        app.post('/reservations', async (req, res) => {
+            const reservation = req.body;
+            const result = await reservationCollection.insertOne(reservation);
+            res.send(result);
+        })
+
+        app.get('/reservations', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await reservationCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        app.delete('/reservations/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await reservationCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
+
+
+
 
         // API for users
         app.get('/users', async (req, res) => {
@@ -177,6 +209,22 @@ async function run() {
         })
 
         // -----------------------**********------------------------------------
+        // payment intent
+        app.post('/create-payment-intent', async (req, res) => {
+            const { price } = req.body;
+            const amount = parseInt(price * 100);
+            console.log(amount, 'amount inside the intent')
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        });
 
         // API for district and upazila
 
