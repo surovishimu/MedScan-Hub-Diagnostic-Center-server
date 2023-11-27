@@ -29,6 +29,12 @@ async function run() {
         const userCollection = client.db("medscanDb").collection("users");
         const bannerCollection = client.db("medscanDb").collection("banners");
         const popularPackages = client.db("medscanDb").collection("popularPackage");
+        const recommendation = client.db("medscanDb").collection("recommendations");
+        const testCollection = client.db("medscanDb").collection("allTestCollection");
+        const districtCollection = client.db("medscanDb").collection
+            ("allDistrict");
+        const upazilaCollection = client.db("medscanDb").collection
+            ("allUpazila");
 
         // API for users
         app.get('/users', async (req, res) => {
@@ -144,6 +150,47 @@ async function run() {
             const result = await popularPackages.findOne(query);
             res.send(result);
         })
+
+        // -----------------------**********------------------------------------
+
+        // API for recommendations
+        app.get('/recommendations', async (req, res) => {
+            const result = await recommendation.find().toArray();
+            res.send(result)
+        })
+
+
+
+        // -----------------------**********------------------------------------
+
+        // API for all test 
+        app.get('/alltests', async (req, res) => {
+            const result = await testCollection.find().toArray();
+            res.send(result)
+        })
+
+        app.get('/alltests/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await testCollection.findOne(query);
+            res.send(result);
+        })
+
+        // -----------------------**********------------------------------------
+
+        // API for district and upazila
+
+        app.get('/alldistrict', async (req, res) => {
+            const result = await districtCollection.find().toArray();
+            res.send(result)
+        })
+        app.get('/allupazila', async (req, res) => {
+            const result = await upazilaCollection.find().toArray();
+            res.send(result)
+        })
+
+
+
 
 
 
