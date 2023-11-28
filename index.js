@@ -38,6 +38,8 @@ async function run() {
             ("allUpazila");
         const reservationCollection = client.db("medscanDb").collection
             ("allReservation");
+        const availableSlotsCollection = client.db("medscanDb").collection
+            ("availableSlote");
 
 
         // API for reservation
@@ -73,6 +75,32 @@ async function run() {
             const result = await userCollection.find().toArray();
             res.send(result)
         })
+        app.get('/usersemail', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await userCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        app.put('/usersemail/:email', async (req, res) => {
+            try {
+                const email = req.params.email;
+                const updatedUserData = req.body;
+                const query = { email: email };
+                const update = { $set: updatedUserData };
+                const result = await userCollection.updateOne(query, update);
+
+                if (result.modifiedCount > 0) {
+                    res.status(200).send({ success: true, message: 'User data updated successfully' });
+                } else {
+                    res.status(404).send({ success: false, message: 'User not found' });
+                }
+            } catch (error) {
+                console.error('Error updating user data:', error);
+                res.status(500).send({ success: false, message: 'Internal Server Error' });
+            }
+        });
+
         app.post('/users', async (req, res) => {
             const users = req.body;
             const query = { email: users.email }
@@ -200,6 +228,11 @@ async function run() {
             const result = await testCollection.find().toArray();
             res.send(result)
         })
+        app.post('/alltests', async (req, res) => {
+            const testInfo = req.body;
+            const result = await testCollection.insertOne(testInfo);
+            res.send(result);
+        })
 
         app.get('/alltests/:id', async (req, res) => {
             const id = req.params.id;
@@ -207,6 +240,36 @@ async function run() {
             const result = await testCollection.findOne(query);
             res.send(result);
         })
+        app.post('/updateSlots', async (req, res) => {
+            try {
+                const { date } = req.body;
+                console.log('Received request to update slots for date:', date);
+
+                const query = { 'availableDates.date': date };
+                console.log('MongoDB query:', query);
+
+                const update = { $inc: { 'availableDates.$.slots': -1 } };
+                console.log('MongoDB update:', update);
+
+                const result = await testCollection.updateMany(query, update);
+                console.log('Update result:', result);
+
+                if (result.modifiedCount > 0) {
+                    res.send({ success: true });
+                } else {
+                    res.status(404).send({ success: false, message: "Date not found" });
+                }
+            } catch (error) {
+                console.error("Error updating slots:", error);
+                res.status(500).send({ error: "Internal Server Error" });
+            }
+        });
+
+
+
+
+
+
 
         // -----------------------**********------------------------------------
         // payment intent
