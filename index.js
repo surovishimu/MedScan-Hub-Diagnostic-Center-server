@@ -48,6 +48,12 @@ async function run() {
             const result = await reservationCollection.insertOne(reservation);
             res.send(result);
         })
+        app.get('/reservations/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await reservationCollection.find(query).toArray();
+            res.send(result);
+        })
 
         app.get('/reservations', async (req, res) => {
             const email = req.query.email;
@@ -240,6 +246,32 @@ async function run() {
             const result = await testCollection.findOne(query);
             res.send(result);
         })
+        app.delete('/alltests/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await testCollection.deleteOne(query);
+            res.send(result);
+        })
+        app.patch('/alltests/:id', async (req, res) => {
+            const item = req.body;
+            console.log(item);
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    title: item.title,
+                    image: item.image,
+                    price: item.price,
+                    description: item.description
+
+                }
+            }
+
+            const result = await testCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
+
+
         app.post('/updateSlots', async (req, res) => {
             try {
                 const { date } = req.body;
