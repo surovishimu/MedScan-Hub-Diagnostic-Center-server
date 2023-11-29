@@ -50,7 +50,7 @@ async function run() {
         })
         app.get('/reservations/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
+            const query = { reserveID: id }
             const result = await reservationCollection.find(query).toArray();
             res.send(result);
         })
@@ -246,6 +246,8 @@ async function run() {
             const result = await testCollection.findOne(query);
             res.send(result);
         })
+
+
         app.delete('/alltests/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
