@@ -38,9 +38,33 @@ async function run() {
             ("allUpazila");
         const reservationCollection = client.db("medscanDb").collection
             ("allReservation");
-        const availableSlotsCollection = client.db("medscanDb").collection
-            ("availableSlote");
 
+        const reportcollection = client.db("medscanDb").collection
+            ("report");
+
+        // Api for test
+        app.post('/report', async (req, res) => {
+            const reservation = req.body;
+            const result = await reportcollection.insertOne(reservation);
+            res.send(result);
+        })
+        app.get('/report', async (req, res) => {
+            const result = await reportcollection.find().toArray();
+            res.send(result)
+        })
+
+        app.get('/reportemail', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await reportcollection.find(query).toArray();
+            res.send(result);
+        })
+        app.get('/reportlink', async (req, res) => {
+            const link = req.query.link;
+            const query = { uniqueLink: uniqueLink }
+            const result = await reportcollection.find(query).toArray();
+            res.send(result);
+        })
 
         // API for reservation
         app.post('/reservations', async (req, res) => {
@@ -55,6 +79,7 @@ async function run() {
             res.send(result);
         })
 
+
         app.get('/reservations', async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
@@ -62,10 +87,17 @@ async function run() {
             res.send(result)
         })
 
+
         app.delete('/reservations/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await reservationCollection.deleteOne(query);
+            res.send(result);
+        })
+        app.get('/testemail/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const result = await reservationCollection.findOne(query);
             res.send(result);
         })
 
@@ -86,6 +118,19 @@ async function run() {
             const query = { email: email }
             const result = await userCollection.find(query).toArray();
             res.send(result)
+        })
+        app.get('/useremail/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result)
+        })
+
+        app.get('/reservationsemail/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const result = await userCollection.findOne(query);
+            res.send(result);
         })
 
         app.put('/usersemail/:email', async (req, res) => {
