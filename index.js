@@ -1,16 +1,15 @@
 const express = require('express');
-const app = express();
-const cors = require('cors');
 require('dotenv').config()
+const cors = require('cors');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const app = express();
+const port = process.env.PORT || 5000;
 
-// middleware
+
+
 app.use(cors());
 app.use(express.json());
-
-
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qqjubfa.mongodb.net/?retryWrites=true&w=majority`;
@@ -26,7 +25,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         const userCollection = client.db("medscanDb").collection("users");
         const bannerCollection = client.db("medscanDb").collection("banners");
         const popularPackages = client.db("medscanDb").collection("popularPackage");
@@ -94,17 +93,12 @@ async function run() {
             const result = await reservationCollection.deleteOne(query);
             res.send(result);
         })
-        app.get('/testemail/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email: email }
+        app.get('/testemail/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
             const result = await reservationCollection.findOne(query);
             res.send(result);
         })
-
-
-
-
-
 
 
 
@@ -161,6 +155,16 @@ async function run() {
             }
             const result = await userCollection.insertOne(users);
             res.send(result);
+        })
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let admin = false;
+            if (user) {
+                admin = user?.role === 'admin';
+            }
+            res.send({ admin });
         })
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
@@ -378,14 +382,6 @@ async function run() {
             const result = await upazilaCollection.find().toArray();
             res.send(result)
         })
-
-
-
-
-
-
-
-
 
 
 
